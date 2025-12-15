@@ -54,7 +54,25 @@ public class Main {
     // ======== 10 REQUIRED METHODS (Students fill these) ========
 
     public static String mostProfitableCommodityInMonth(int month) {
-        return ="DUMMY"
+        if (month < 0 ||  month >= MONTHS) {
+            return  "INVALİD_MONTH";
+        }
+        int maxProfit = Integer.MIN_VALUE;
+        String bestCommName = "";
+
+        for(int c=0; c<COMMS; c++){
+            int currentCommTotal = 0;
+            //o aydaki toplam karı hesaplama
+            for (int d= 0; d<DAYS; d++){
+                currentCommTotal +=allData[month][d][c];
+            }
+            if (currentCommTotal> maxProfit){
+                maxProfit=currentCommTotal;
+                bestCommName=commodities[c];
+            }
+        }
+        return bestCommName + " " + maxProfit;
+
     }
 
     public static int totalProfitOnDay(int month, int day) {
