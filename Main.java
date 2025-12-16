@@ -121,7 +121,6 @@ public static int commodityProfitInRange(String commodity, int from, int to) {
                 bestDay = d + 1;
             }
         }
-
         return bestDay;
     }
 
