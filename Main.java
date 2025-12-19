@@ -10,6 +10,9 @@ public class Main {
     static String[] months = {"January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"};
     // ======== REQUIRED METHOD LOAD DATA (Students fill this) ========
+   static {
+       loadData();
+    }
     public static int[][][] allData = new int[MONTHS][DAYS][COMMS];
 
     public static int getCommodityIndex(String commodity) {
@@ -34,8 +37,8 @@ public class Main {
 
                     if (parts.length == 3) {
                         int day = Integer.parseInt(parts[0].trim()) - 1;
-                        String commodityName = parts[1].trim();
-                        int commIndex = getCommodityIndex(commodityName);
+                        String commName = parts[1].trim();
+                        int commIndex = getCommodityIndex(commName);
                         int profit = Integer.parseInt(parts[2].trim());
 
                         if (day >= 0 && day < DAYS && commIndex != -1) {
@@ -45,6 +48,7 @@ public class Main {
                 }
                 sc.close();
             } catch (FileNotFoundException e) {
+            }catch (NumberFormatException e){
             }
 
         }
@@ -125,12 +129,56 @@ public static int commodityProfitInRange(String commodity, int from, int to) {
     }
 
     
-    public static String bestMonthForCommodity(String comm) { 
-        return "DUMMY"; 
+    public static String bestMonthForCommodity(String comm) { // geçerli emtia  mı?
+        int commIndex = getCommodityIndex(comm);
+        if(commIndex==-1){
+            return "INVALID_COMMODITY";
+        }
+        // 2) En iyi ayı bulmak için başlangıç değerleri
+        int bestMonthIndex = 0;              // şimdilik Ocak (0) varsayıyoruz
+        int bestMonthProfit = Integer.MIN_VALUE; // ilk ayı bilerek küçük sayı veriyorum ki sonrasında güncellensin
+        // 3) 12 ayı tek tek gez
+        for (int m = 0; m < MONTHS; m++) {
+            int monthProfit = 0; // 0-11 arası tüm ayların karlarını brda biriktiriyoruz
+
+            // 4) Bu ayın 28 gününü topla (sadece seçilen emtia için)
+            for (int d = 0; d < DAYS; d++) {
+                monthProfit += allData[m][d][commIndex];
+
+          // 5) Bu ay daha iyiyse "en iyi ay" olarak güncelle
+            if (monthProfit > bestMonthProfit) {
+                bestMonthProfit = monthProfit;
+                bestMonthIndex = m;
+            }
+        }
+
+    }
+    // 6) Sonucu döndür: ay adı + toplam kâr
+        return months[bestMonthIndex] + " " + bestMonthProfit;
     }
 
-    public static int consecutiveLossDays(String comm) { 
-        return 1234; 
+    public static int consecutiveLossDays(String comm) {
+        int commIndex = getCommodityIndex(comm);
+        if (commIndex == -1) {
+            return -99999;
+        }
+        int longestStreak = 0;
+        int currentStreak = 0;
+
+        for (int m = 0; m < MONTHS; m++) {
+            for (int d = 0; d < DAYS; d++) {
+                int profitToday=allData[d][m][commIndex];
+                if (profitToday<0){// negatif bir sayıysa seriyi uzatır
+                    currentStreak++;
+                }
+                if (currentStreak>longestStreak){
+                    currentStreak=longestStreak;
+                }else{
+                    currentStreak=0;
+                }
+            }
+        }
+        return longestStreak;
     }
     
     public static int daysAboveThreshold(String comm, int threshold) { 
@@ -150,7 +198,7 @@ public static int commodityProfitInRange(String commodity, int from, int to) {
     }
 
     public static void main(String[] args) {
-        loadData();
+       loadData();
         System.out.println("Data loaded – ready for queries");
     }
 }
