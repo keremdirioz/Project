@@ -1,5 +1,6 @@
 // Main.java — Students version
 import java.io.*;
+import java.sql.SQLOutput;
 import java.util.*;
 
 public class Main {
@@ -10,10 +11,13 @@ public class Main {
     static String[] months = {"January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"};
     // ======== REQUIRED METHOD LOAD DATA (Students fill this) ========
-   static {
-       loadData();
-    }
+
+
+
     public static int[][][] allData = new int[MONTHS][DAYS][COMMS];
+    static {
+        loadData();
+    }
 
     public static int getCommodityIndex(String commodity) {
         for (int i = 0; i < COMMS; i++) {
@@ -144,13 +148,12 @@ public static int commodityProfitInRange(String commodity, int from, int to) {
             // 4) Bu ayın 28 gününü topla (sadece seçilen emtia için)
             for (int d = 0; d < DAYS; d++) {
                 monthProfit += allData[m][d][commIndex];
-
+            }
           // 5) Bu ay daha iyiyse "en iyi ay" olarak güncelle
             if (monthProfit > bestMonthProfit) {
                 bestMonthProfit = monthProfit;
                 bestMonthIndex = m;
             }
-        }
 
     }
     // 6) Sonucu döndür: ay adı + toplam kâr
@@ -167,12 +170,12 @@ public static int commodityProfitInRange(String commodity, int from, int to) {
 
         for (int m = 0; m < MONTHS; m++) {
             for (int d = 0; d < DAYS; d++) {
-                int profitToday=allData[d][m][commIndex];
+                int profitToday=allData[m][d][commIndex];
                 if (profitToday<0){// negatif bir sayıysa seriyi uzatır
                     currentStreak++;
                 }
                 if (currentStreak>longestStreak){
-                    currentStreak=longestStreak;
+                    longestStreak=currentStreak;
                 }else{
                     currentStreak=0;
                 }
@@ -181,20 +184,80 @@ public static int commodityProfitInRange(String commodity, int from, int to) {
         return longestStreak;
     }
     
-    public static int daysAboveThreshold(String comm, int threshold) { 
-        return 1234; 
+    public static int daysAboveThreshold(String comm, int threshold) {
+        int commIndex= getCommodityIndex(comm);
+        if (commIndex==-1){
+            return 0;    // emtia yoksa sıfıra döndür
+        }
+        int dayCount=0; // eşik değeri geçen günleri burda biriktirir
+        for (int m=0;m<MONTHS;m++){
+            for (int d=0;d<DAYS;d++){
+                if (allData[m][d][commIndex]>threshold){ // seçilen emtianın değerlerine bakılır eşik değer üzerinde ise gün geeçerli sauılır
+                    dayCount++;
+                }
+            }
+        }
+        return dayCount;
     }
 
-    public static int biggestDailySwing(int month) { 
-        return 1234; 
+    public static int biggestDailySwing(int month) { // birgünden ertesi güne olan fark
+        int maxSwing=0; // en büyük farkı tutacak değişken
+        for (int c=0;c<COMMS;c++){
+            for (int d =0;d<DAYS-1;d++){ // günleri gezerken 28 den fazla gezmemesi için -1 yapıyorz
+                int today=allData[month][d][c]; // emtianın değerine burda bakıyroruz
+                int nextDay=allData[month][d+1][c]; // aynı emtianın  bir sonraki günki değerine burda bakıyroruz
+                int swing;
+// iki gün arasındaki değerleri mutlak değer içinde birbirinden çıkarıyoruz
+                if (nextDay >= today) {
+                    swing = nextDay - today;
+                } else {
+                    swing = today - nextDay;
+                }
+                if (swing>maxSwing){
+                    maxSwing=swing;
+                }
+            }
+        }
+        return maxSwing;
     }
     
-    public static String compareTwoCommodities(String c1, String c2) { 
-        return "DUMMY is better by 1234"; 
+    public static String compareTwoCommodities(String c1, String c2) { // 2 emtianıyı kıyaslama methodu
+        int index1 = getCommodityIndex(c1); // string olan emtiaları arraylara döndürüyoruz
+        int index2 = getCommodityIndex(c2);
+        if (index1 == -1 || index2 == -1){ // 2 tane emtia var mı diye kontrol ediyoruz yoksa kıyaslama olmaz
+            return "INVALID_COMMODITY";
+        }
+        int total1=0; // yıl boyu kazancı burda biriktiriyoruz
+        int total2=0;
+        for (int m=0;m<MONTHS;m++){
+            for (int d=0;d<DAYS; d++){
+                total1 += allData[m][d][index1];// seçilen emtianın aygün ve yıl değerlini topluyoryz
+                total2+= allData[m][d][index2];
+            }
+        }
+        if (total1>total2){
+            return c1+"PERFORMED_BETTER";
+        } else if (total2>total1) {
+            return c2 +"PERFORMED_BETTER";
+        } else {
+            return "BOTH_PERFORMED_SAME";
+        }
     }
     
     public static String bestWeekOfMonth(int month) { 
-        return "DUMMY"; 
+        int bestWeek=1; // başlangıçta en iyi haftayı 1. hafta seçiyoruz sonra güncellenecek
+        int maxTotal= Integer.MIN_VALUE; // karşılaştırma yapabilmek için çok küçük bir değerle başlanır
+        for (int w=0;w<4;w++){
+            int weekTotal=0;
+            for (int d =w * 7;d< w * 7 + 7;d++){
+                for (int c =0; c<COMMS;c++){
+                 weekTotal += allData[month][d][c];
+                }
+            }if (weekTotal> maxTotal){ // hafta kontorlü önceki eniyi hafta ile kıyaslanıyor
+                maxTotal = weekTotal;
+                bestWeek =  w+ 1; // w de 0 dan başlandığından kafa karışmasın diye
+        }
+        } return bestWeek+"BEST_WEEK_IS_THIS_WEEK";
     }
 
     public static void main(String[] args) {
