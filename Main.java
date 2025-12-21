@@ -16,10 +16,7 @@ public class Main {
 
     public static int[][][] allData = new int[MONTHS][DAYS][COMMS];
 
-    static {
-        loadData();
-    }
-
+   
     public static int getCommodityIndex(String commodity) {
         for (int i = 0; i < COMMS; i++) {
             if (commodities[i].equals(commodity)) {
